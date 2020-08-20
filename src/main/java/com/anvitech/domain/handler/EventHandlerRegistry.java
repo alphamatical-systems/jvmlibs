@@ -1,6 +1,6 @@
 package com.anvitech.domain.handler;
 
-import com.anvitech.domain.Message;
+import com.anvitech.domain.event.Message;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 

@@ -1,6 +1,6 @@
 package com.anvitech.domain.handler;
 
-import com.anvitech.domain.Message;
+import com.anvitech.domain.event.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,6 +1,6 @@
 package com.anvitech.domain.handler;
 
-import com.anvitech.domain.Message;
+import com.anvitech.domain.event.Message;
 
 /**
  * Method invocation exception representation.

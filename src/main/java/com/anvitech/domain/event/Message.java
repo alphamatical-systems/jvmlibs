@@ -1,4 +1,4 @@
-package com.anvitech.domain;
+package com.anvitech.domain.event;
 
 import com.anvitech.support.IdGenerator;
 

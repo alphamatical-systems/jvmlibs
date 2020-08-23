@@ -1,6 +1,6 @@
 package com.anvitech.domain.handler;
 
-import com.anvitech.domain.event.Message;
+import com.anvitech.domain.event.Envelope;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
@@ -25,11 +25,12 @@ public class EventHandlerRegistry {
    *
    * @param eventHandler event handler
    */
+  @SuppressWarnings("unchecked")
   public void registerEventHandler(Object eventHandler) {
     stream(eventHandler.getClass().getDeclaredMethods())
       .filter(this::isHandlerMethod)
       .forEach(m -> {
-        Class<Message> payloadType = (Class<Message>) m.getParameters()[0].getType();
+        Class<Envelope> payloadType = (Class<Envelope>) m.getParameters()[0].getType();
         EventHandlerMethod eventHandlerMethod = createEventHandlerMethod(m, eventHandler, payloadType);
         eventHandlers.put(eventHandlerMethod.getSimpleName(), eventHandlerMethod);
       });
@@ -54,7 +55,7 @@ public class EventHandlerRegistry {
    * @return a new instance of EventHandlerMethod
    */
   protected EventHandlerMethod createEventHandlerMethod(Method m, Object eventHandler,
-                                                        Class<? extends Message> payloadType) {
+                                                        Class<? extends Envelope> payloadType) {
     return new EventHandlerMethod(m, eventHandler, payloadType);
   }
 
@@ -69,6 +70,16 @@ public class EventHandlerRegistry {
   private boolean isHandlerMethod(Method m) {
     return m.isAnnotationPresent(EventHandler.class) &&
       (Modifier.isPublic(m.getModifiers()) || Modifier.isProtected(m.getModifiers())) &&
-      m.getParameters().length == 1;
+      isEnvelope(m.getParameterTypes()[0]) && m.getParameters().length == 1;
+  }
+
+  /**
+   * Checks if given class is an Envelope.
+   *
+   * @param clazz class to check
+   * @return true if can be assigned from Envelope else false
+   */
+  private boolean isEnvelope(Class clazz) {
+    return Envelope.class.isAssignableFrom(clazz);
   }
 }

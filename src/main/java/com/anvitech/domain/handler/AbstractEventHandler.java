@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.Objects;
 
 /**
  * Abstract event handler for handlers of all types.
@@ -15,33 +14,34 @@ import java.util.Objects;
  */
 public abstract class AbstractEventHandler {
   private static final Logger log = LoggerFactory.getLogger(AbstractEventHandler.class);
-  private static EventHandlerRegistry registry;
+  private static final EventHandlerRegistry registry;
+
+  static {
+    registry = new EventHandlerRegistry();
+  }
 
   /**
    * Fully initialized instance.
    */
   protected AbstractEventHandler() {
-    if (Objects.isNull(registry)) {
-      registry = new EventHandlerRegistry();
-    }
     registerHandlers();
   }
 
   /**
    * Handles event from kafka stream.
    *
-   * @param message message
+   * @param event event
    */
-  public static void handle(Message message) {
-    final String eventType = message.getClass().getSimpleName();
+  public static void handle(final Message event) {
+    final String eventType = event.getEventType();
     final Collection<EventHandlerMethod> handlers = registry.getEventHandlers(eventType);
     if (handlers.isEmpty()) {
       log.warn("No event handler found for event [{}]", eventType);
     } else {
       handlers.forEach(m -> {
         try {
-          log.info("Method calling [{}]", m.getSimpleName());
-          m.invokeMethod(message);
+          log.info("Method calling for [{}]", m.getSimpleName());
+          m.invokeMethod(event);
         } catch (EventHandlerMethodInvokeException e) {
           log.error("Error occurred during call to event handler for type [{}]", eventType, e);
         }

@@ -1,8 +1,5 @@
 package com.anvitech.domain.event;
 
-import com.anvitech.support.IdGenerator;
-
-import java.io.Serializable;
 import java.time.ZonedDateTime;
 
 /**
@@ -11,53 +8,94 @@ import java.time.ZonedDateTime;
  * @author Dinesh Kumar
  * @since Aug 17, 2020
  */
-public class Message implements Serializable {
-  private static final long serialVersionUID = 1694869349215109944L;
-  private final String id;
-  private final ZonedDateTime generatedAt;
+public final class Message {
+  // Header fields
+  private String id;
+  private String eventType;
+  private String source;
+  private EventTrigger trigger;
+  private ZonedDateTime generatedAt;
+
+  // Event detail
+  private String payload;
 
   /**
    * No-args constructor.
    */
   protected Message() {
-    id = IdGenerator.uuid();
-    generatedAt = ZonedDateTime.now();
   }
 
   /**
    * Creates fully initialized instance.
    *
    * @param id identifier
+   * @param eventType event type
+   * @param source source
+   * @param trigger trigger
    * @param generatedAt generated at timestamp
+   * @param payload payload
    */
-  protected Message(String id, ZonedDateTime generatedAt) {
+  public Message(String id, String eventType, String source, EventTrigger trigger,
+                 ZonedDateTime generatedAt, String payload) {
     this.id = id;
+    this.eventType = eventType;
+    this.source = source;
+    this.trigger = trigger;
     this.generatedAt = generatedAt;
+    this.payload = payload;
   }
 
   /**
-   * Gets message identifier.
+   * Gets identifier.
    *
-   * @return id
+   * @return ide
    */
   public String getId() {
     return id;
   }
 
   /**
-   * Gets generated at timestamp.
+   * Gets event type.
    *
-   * @return generatedAt
+   * @return eventType
+   */
+  public String getEventType() {
+    return eventType;
+  }
+
+  /**
+   * Gets source of event.
+   *
+   * @return source
+   */
+  public String getSource() {
+    return source;
+  }
+
+  /**
+   * Gets action that triggered the event.
+   *
+   * @return trigger
+   */
+  public EventTrigger getTrigger() {
+    return trigger;
+  }
+
+  /**
+   * Gets timestamp when event is generated.
+   *
+   * @return generated at
    */
   public ZonedDateTime getGeneratedAt() {
     return generatedAt;
   }
 
-  @Override
-  public String toString() {
-    return "Message{" +
-      "id='" + id + '\'' +
-      ", generatedAt=" + generatedAt +
-      '}';
+  /**
+   * Gets event paylaod.
+   *
+   * @return paylaod
+   */
+  public String getPayload() {
+    return payload;
   }
 }

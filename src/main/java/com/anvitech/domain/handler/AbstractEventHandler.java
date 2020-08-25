@@ -32,9 +32,9 @@ public abstract class AbstractEventHandler {
    *
    * @param event event
    */
-  public static void handle(final Message event) {
+  public void handle(final Message event) {
     final String eventType = event.getEventType();
-    final Collection<EventHandlerMethod> handlers = registry.getEventHandlers(eventType);
+    final Collection<EventHandlerMethod> handlers = getRegistry().getEventHandlers(eventType);
     if (handlers.isEmpty()) {
       log.warn("No event handler found for event [{}]", eventType);
     } else {

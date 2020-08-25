@@ -17,7 +17,7 @@ public class MessageUtils {
    * @param event event
    * @return {@link Message}
    */
-  private static Message toMessage(EntityEvent event) {
+  public static Message toMessage(EntityEvent event) {
     return new Message(
       event.getId(),
       event.getEventType(),

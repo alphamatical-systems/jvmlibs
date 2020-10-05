@@ -23,7 +23,7 @@ public abstract class EntityEvent implements Envelope {
   /**
    * No-arg constructor.
    */
-  protected EntityEvent() {
+  private EntityEvent() {
   }
 
   /**

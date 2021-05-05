@@ -87,10 +87,12 @@ public class IdGenerator {
     long mostSignificantBytes = 0;
     long leastSignificantBytes = 0;
     assert bytes.length == 16 : "data must be 16 bytes in length";
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < 8; i++) {
       mostSignificantBytes = (mostSignificantBytes << 8) | (bytes[i] & 0xff);
-    for (int i = 8; i < 16; i++)
+    }
+    for (int i = 8; i < 16; i++) {
       leastSignificantBytes = (leastSignificantBytes << 8) | (bytes[i] & 0xff);
+    }
 
     return new UUID(mostSignificantBytes, leastSignificantBytes);
   }

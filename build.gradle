@@ -1,72 +1,160 @@
+import java.nio.charset.StandardCharsets
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-plugins {
-    id 'java'
+allprojects {
+  //--------------------------------------------------------------------------------------------------------------------
+  // Plugins
+  //--------------------------------------------------------------------------------------------------------------------
+
+  apply plugin: 'idea'
+  apply plugin: 'maven-publish'
+
+  //--------------------------------------------------------------------------------------------------------------------
+  // Properties
+  //--------------------------------------------------------------------------------------------------------------------
+
+  group = 'com.anvitech.jvmlibs'
+  version = project.hasProperty('artifactVersion') ? artifactVersion : 'IDE'
 }
 
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
+configure(subprojects.findAll { it.name != 'platform' }) {
+  //--------------------------------------------------------------------------------------------------------------------
+  // Plugins
+  //--------------------------------------------------------------------------------------------------------------------
 
-group 'com.anvitech'
-version = project.hasProperty('artifactVersion') ? artifactVersion : ''
+  apply plugin: 'checkstyle'
+  apply plugin: 'java-library'
 
-repositories {
-  mavenCentral()
-  maven {
-    url = "${artifactory_uri.matches("^http.*\$") ? artifactory_uri : "http://$artifactory_uri"}/libs-snapshots"
-    credentials {
-      username = "${artifactory_userid}"
-      password = "${artifactory_pass}"
-    }
-  }
-}
+  //--------------------------------------------------------------------------------------------------------------------
+  // Properties
+  //--------------------------------------------------------------------------------------------------------------------
 
-apply plugin: 'maven-publish'
-apply plugin: 'java-library'
+  sourceCompatibility = JavaVersion.VERSION_11
+  targetCompatibility = JavaVersion.VERSION_11
 
-dependencies {
-  compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
-  compile group: 'com.google.guava', name: 'guava', version: '29.0-jre'
-  compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
-  compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.11.2'
-
-  testCompile group: 'junit', name: 'junit', version: '4.12'
-}
-
-jar {
-  excludes = ["*.gitkeep"]
-  manifest { // https://docs.oracle.com/javase/tutorial/deployment/jar/packageman.html
-    final def attribs = [
-      "Application-Name": "${project.name}",
-      "Application-Title": "${project.description}",
-      "Build-Date": ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_DATE_TIME),
-      "Build-Jdk": System.getProperty("java.version"),
-      "Created-By": System.getProperty("user.name"),
-      "Gradle-Version": gradle.gradleVersion,
-      "Implementation-Version": "${project.version}"
-    ]
-    attributes(attribs)
-  }
-}
-
-publishing {
-  publications {
-    maven(MavenPublication) {
-      from components.java
-    }
-  }
+  //--------------------------------------------------------------------------------------------------------------------
+  // Repositories
+  //--------------------------------------------------------------------------------------------------------------------
 
   repositories {
+    mavenCentral()
+
+    //------------------------------------------------------------------------------------------------------------------
+    // Anvitech Artifactory Repositories
+    //------------------------------------------------------------------------------------------------------------------
+
+    // snapshots
     maven {
-      final def contextUrl = artifactory_uri.startsWith("http") ? artifactory_uri : "http://$artifactory_uri"
-      final def type = "${version.endsWith('-SNAPSHOT') ? 'snapshots' : 'releases'}"
+      url = "${artifactory_uri.matches("^http.*\$") ? artifactory_uri : "http://$artifactory_uri"}/jvmlibs-snapshots"
       credentials {
         username = "${artifactory_userid}"
         password = "${artifactory_pass}"
       }
-      url = "${contextUrl}/libs-${type}-local"
+    }
+
+    // releases
+    maven {
+      url = "${artifactory_uri.matches("^http.*\$") ? artifactory_uri : "http://$artifactory_uri"}/jvmlibs-releases"
+      credentials {
+        username = "${artifactory_userid}"
+        password = "${artifactory_pass}"
+      }
+    }
+  }
+
+  //--------------------------------------------------------------------------------------------------------------------
+  // Dependencies
+  //--------------------------------------------------------------------------------------------------------------------
+
+  dependencies {
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.11.2'
+
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+  }
+
+  tasks.withType(JavaCompile) {
+    options.encoding = "${StandardCharsets.UTF_8}"
+  }
+
+  //--------------------------------------------------------------------------------------------------------------------
+  // Checkstyle Configuration
+  //--------------------------------------------------------------------------------------------------------------------
+
+  checkstyle {
+    maxWarnings = 5
+    toolVersion = "8.21"
+  }
+
+  //--------------------------------------------------------------------------------------------------------------------
+  // Jar Configuration
+  //--------------------------------------------------------------------------------------------------------------------
+
+  jar {
+    excludes = ["*.gitkeep"]
+    manifest { // https://docs.oracle.com/javase/tutorial/deployment/jar/packageman.html
+      final def attribs = [
+        "Application-Name": "${project.name}",
+        "Application-Title": "${project.description}",
+        "Build-Date": ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_DATE_TIME),
+        "Build-Jdk": System.getProperty("java.version"),
+        "Created-By": System.getProperty("user.name"),
+        "Gradle-Version": gradle.gradleVersion,
+        "Implementation-Version": "${project.version}"
+      ]
+      attributes(attribs)
+    }
+  }
+
+  //--------------------------------------------------------------------------------------------------------------------
+  // Test Configuration
+  //--------------------------------------------------------------------------------------------------------------------
+
+  test {
+    useJUnitPlatform {
+      excludeTags 'acceptance'
+    }
+  }
+
+  //--------------------------------------------------------------------------------------------------------------------
+  // Tasks
+  //--------------------------------------------------------------------------------------------------------------------
+
+  task acceptance(type: Test) {
+    useJUnitPlatform {
+      excludeTags 'unit'
+    }
+  }
+
+  task verify {
+    dependsOn "checkstyleMain", "checkstyleTest"
+  }
+
+  //--------------------------------------------------------------------------------------------------------------------
+  // Publishing
+  //--------------------------------------------------------------------------------------------------------------------
+
+  publishing {
+    publications {
+      maven(MavenPublication) {
+        from components.java
+      }
+    }
+
+    repositories {
+      maven {
+        final def contextUrl = artifactory_uri.startsWith("http") ? artifactory_uri : "http://$artifactory_uri"
+        final def type = "${version.endsWith('-SNAPSHOT') ? 'snapshots' : 'releases'}"
+        credentials {
+          username = "${artifactory_userid}"
+          password = "${artifactory_pass}"
+        }
+        url = "${contextUrl}/jvmlibs-${type}"
+      }
     }
   }
 }
+

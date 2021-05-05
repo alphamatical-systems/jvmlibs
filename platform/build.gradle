@@ -1,0 +1,52 @@
+//----------------------------------------------------------------------------------------------------------------------
+// Plugins
+//----------------------------------------------------------------------------------------------------------------------
+
+plugins {
+  id 'java-platform'
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+// Dependency Management
+//----------------------------------------------------------------------------------------------------------------------
+
+javaPlatform {
+  allowDependencies()
+}
+
+dependencies {
+  //Add transitive dependencies here
+
+  constraints {
+    //------------------------------------------------------------------------------------------------------------------
+    // Libraries
+    //------------------------------------------------------------------------------------------------------------------
+
+    api project(':events')
+    api project(':http-client')
+  }
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+// Publishing
+//--------------------------------------------------------------------------------------------------------------------
+
+publishing {
+  publications {
+    maven(MavenPublication) {
+      from components.javaPlatform
+    }
+  }
+
+  repositories {
+    maven {
+      final def contextUrl = artifactory_uri.startsWith("http") ? artifactory_uri : "http://$artifactory_uri"
+      final def type = "${version.endsWith('-SNAPSHOT') ? 'snapshots' : 'releases'}"
+      credentials {
+        username = "${artifactory_userid}"
+        password = "${artifactory_pass}"
+      }
+      url = "${contextUrl}/jvmlibs-${type}"
+    }
+  }
+}

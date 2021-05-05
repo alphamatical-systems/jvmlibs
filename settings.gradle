@@ -1,2 +1,5 @@
 rootProject.name = 'jvmlibs'
+include 'http-client'
+include 'platform'
+include 'events'
 

@@ -23,7 +23,7 @@ public abstract class EntityEvent implements Envelope {
   /**
    * No-arg constructor.
    */
-  private EntityEvent() {
+  protected EntityEvent() {
   }
 
   /**
@@ -118,8 +118,8 @@ public abstract class EntityEvent implements Envelope {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o) { return true; }
+    if (o == null || getClass() != o.getClass()) { return false; }
     EntityEvent that = (EntityEvent) o;
     return Objects.equals(id, that.id) &&
       Objects.equals(generatedAt, that.generatedAt) &&
